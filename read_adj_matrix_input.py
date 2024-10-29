@@ -22,16 +22,56 @@ def read_adj_matrix_input(filename):
     with open(filename, 'r') as f:
         # Read the first line to get the dimensions of the matrix
         line = f.readline().strip()
-        m, n, o = map(int, line.split(','))
-        
-        # Initialize the 3d array arr with zeros
-        arr = np.zeros((m, n, o))
-        
-        # Read the rest of the file to fill in the values
-        for line in f:
-            parts = line.strip().split(',')
-            i, j, k = map(int, parts[:3])
-            value = int(parts[3])
-            arr[i, j, k] = value
+        dimensions = len(line.split(',')) - 1
+
+        # Initialize the array with zeros
+        adj_matrix = np.zeros(shape=(dimensions,dimensions), dtype=bool)
+
+        # Read the rest of the lines to fill in the adjacency matrix, ignoring the first line and the first column
+        for i, line in enumerate(f):
+            values = line.strip().split(',')[1:]
+            adj_matrix[i] = [int(value) for value in values]
+
+    return adj_matrix
+
+# only have gene names and indices
+def make_map_of_genes(filename):
+    """
+    Read the input adjacency matrix from a file and return it as a numpy array.
     
-    return arr
+    Parameters:
+    filename (str): The name of the file containing the adjacency matrix.
+    
+    Returns:
+    numpy.ndarray: The adjacency matrix read from the file.
+    """
+    
+    
+    # only read first row
+    # make map of gene names to indices
+    # also make array of gene names
+
+    with open(filename, 'r') as f:
+        # Read the first line to get the dimensions of the matrix
+        line = f.readline().strip()
+        genes = line.split(',')[1:] # index to gene name, ignore first column
+
+        gene_to_index = {}
+
+        for i, gene in enumerate(genes):
+            gene_to_index[gene] = i
+
+    return gene_to_index, genes
+
+
+if __name__ == "__main__":
+    # Test the read_adj_matrix_input function
+    filename = "results_adj_COHP_44940_480__F_B_w0.csv"
+    adj_matrix = read_adj_matrix_input(filename)
+    print(adj_matrix)
+    print(adj_matrix.shape)
+    
+    gene_to_index, genes = make_map_of_genes(filename)
+    print(gene_to_index)
+    print(genes)
+
