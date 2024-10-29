@@ -7,6 +7,7 @@ Cox6c,1,0,0,0,1,1,0,1,1,1,0,1,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,
 Ndufa1,1,0,0,1,0,1,0,1,1,0,0,0,0,0,0,"""
 
 import numpy as np
+import tensorly as tl
 
 def read_adj_matrix_input(filename):
     """
@@ -31,6 +32,9 @@ def read_adj_matrix_input(filename):
         for i, line in enumerate(f):
             values = line.strip().split(',')[1:]
             adj_matrix[i] = [int(value) for value in values]
+
+        # Convert the adjacency matrix to a boolean tensor
+        adj_matrix = tl.tensor(adj_matrix, dtype=bool)
 
     return adj_matrix
 
