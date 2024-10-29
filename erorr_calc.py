@@ -1,6 +1,32 @@
 import numpy as np
+from sklearn.decomposition import NMF
 
 arr = [] # 3d array, binary values. m x n x o
+
+from sklearn.decomposition import NMF
+
+def matrix_factorization(A, rank):
+    """
+    Perform matrix factorization on matrix A into three matrices U, V, and W.
+    
+    Parameters:
+    A (numpy.ndarray): The input adjacency matrix to be factorized.
+    rank (int): The rank of the factorized matrices.
+    
+    Returns:
+    tuple: Three factorized matrices U, V, and W.
+    """
+    # Initialize NMF model
+    model = NMF(n_components=rank, init='random', random_state=0)
+    
+    # Fit the model and transform the data
+    U = model.fit_transform(A)
+    W = model.components_
+    
+    # Initialize V as an identity matrix for simplicity
+    V = np.eye(rank)
+    
+    return U, V, W
 
 def initialize():
     # Read the file and initialize the array
@@ -65,27 +91,12 @@ def adam_optimizer(x, y, z, arr, i, j, k, r, learning_rate=0.001, beta1=0.9, bet
 def get_estimated_sum_value(A, B, C):
     # Get the sum of the product of a, b, c
     # len A is going to be r
-    sum_abc = 0
+    # sum_abc = 0
     # a[0] * b[0] * c[0] + a[1] * b[1] * c[1] + a[2] * b[2] * c[2]...etc
-    for f in range(1, len(A)):
-        sum_abc += A[f] * B[f] * C[f]
+    # for f in range(1, len(A)):
+    #     sum_abc += A[f] * B[f] * C[f]
 
-    return sum_abc
-
-    
-# def sum_at_Ai_Bj_Ck(A, B, C, i, j, k):
-#     # sum from 1=1 to r (a(f)*b(f)*c(f))
-#     sum_abc = 0
-#     # a[0] * b[0] * c[0] + a[1] * b[1] * c[1] + a[2] * b[2] * c[2]...etc
-#      # for each combination of a[0], b[0], c[0], a[0], b[0], c[1]...etc
-#     for f in range(1, len(A)):
-#         sum_abc += A[f] * B[f] * C[f]
-#     return sum
-
-# # def get_all_com
-# def get_sum_at_m_n_o(A, B, C, m, n, o):
-#     pass
-
+    return sum(A * B * C)
 
 def get_approx_x_ijk(A, B, C, i, j, k): # , r
     # Get the approximate value of x_ijk
