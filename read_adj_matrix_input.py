@@ -147,7 +147,7 @@ def read_edge_list_input(filepath):
         # make sparse tensor
         mouse_3d_matrix = sparse.DOK((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
         wb = openpyxl.load_workbook(filepath)
-        weeks = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+        weeks = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
         
         # iter over sheets
         for sheet in wb.sheetnames:
