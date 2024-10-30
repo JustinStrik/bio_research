@@ -1,7 +1,7 @@
 import numpy as np
 import tensorly as tl
 from tensorly.decomposition import parafac, non_negative_parafac
-from read_adj_matrix_input import read_adj_matrix_input, test_mod
+from read_adj_matrix_input import read_adj_matrix_input, test_mod, read_edge_list_input
 from get_adj_matrix_files import get_adj_matrix_files, get_edge_list_files
 import sys
 
@@ -41,7 +41,18 @@ if __name__ == "__main__":
     
     # each sheet is a mouse at a time
     # each row is an edge connecting two genes
-    val = 0
+
+    # get matrix from edge list for each mouse
+    mouse_matrices = []
+    for file in files:
+        mouse_matrix, missing_weeks = read_edge_list_input(file)
+        mouse_matrices.append(mouse_matrix)
+
+    # stack them all vertically
+    A = np.vstack(mouse_matrices)
+
+
+
 
    
     # make A sparse tensor !!!
