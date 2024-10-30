@@ -13,6 +13,8 @@ import sparse
 from tensorly.contrib.sparse import tensor as sptensor
 from tensorly import stack
 import pandas as pd
+import openpyxl
+
 TOTAL_GENES = 1432
 TOTAL_WEEKS = 20
 
@@ -123,11 +125,57 @@ def test_mod(A):
     # change first value in matrix
     A[0,0] = -1
 
+def read_edge_list_input(filepath):
+    """
+    Read the input edge list from a file and return it as a numpy array.
+    
+    Parameters:
+    filename (str): The name of the file containing the edge list. Filetype is .xlsm
+    
+    Returns:
+    numpy.ndarray: The edge list read from the file.
+    """
+    # Sheet 1 is Week 0, all other sheets are labeled by week, last characters after w is the week number
+    # each line is an edge between two genes
+
+    with open(filepath, 'r') as f:
+        # Read the first line to get the dimensions of the matrix
+        # line = f.readline().strip()
+
+        # Read the rest of the lines to fill in the adjacency matrix, ignoring the first line and the first column
+        # make the two gene names the indices of the matrix
+        # make sparse tensor
+        mouse_3d_matrix = sparse.DOK((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
+        wb = openpyxl.load_workbook(filepath)
+        
+        # iter over sheets
+        for sheet in wb.sheetnames:
+            # get the week number
+            if sheet == "Sheet1":
+                week = 0
+            else:
+                week = sheet.split('w')[-1]
+            print(week)
+            week = int(week)
+            # get the sheet
+            ws = wb[sheet]
+            # get the values
+            for row in ws.iter_rows(min_row=0, max_row=ws.max_row, min_col=0, max_col=2):
+                # get the values
+                gene1 = row[0].value
+                gene2 = row[1].value
+                mouse_3d_matrix[gene1, gene2, week] = 1
+
+    # convert to COO
+    mouse_3d_matrix = sparse.COO(mouse_3d_matrix)
+
+    return mouse_3d_matrix
+
 
 if __name__ == "__main__":
     # Test the read_adj_matrix_input function
-    filename = "results_adj_COHP_44940_480__F_B_w0.csv"
-    adj_matrix = read_adj_matrix_input(filename)
+    filename = "COHP_44940_480__F_B.xlsm"
+    adj_matrix = read_edge_list_input(filename)
     print(adj_matrix)
     print(adj_matrix.shape)
     
