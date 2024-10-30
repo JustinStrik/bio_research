@@ -8,6 +8,55 @@ Ndufa1,1,0,0,1,0,1,0,1,1,0,0,0,0,0,0,"""
 
 import numpy as np
 import tensorly as tl
+import sparse
+# https://tensorly.org/stable/user_guide/sparse_backend.html
+from tensorly.contrib.sparse import tensor as sptensor
+from tensorly import stack
+import pandas as pd
+TOTAL_GENES = 1432
+TOTAL_WEEKS = 20
+
+def read_adj_matrix_input(filename, A, mouse_index):
+    """
+    Read the input adjacency matrix from a file and return it as a numpy array.
+    
+    Parameters:
+    filename (str): The name of the file containing the adjacency matrix.
+    A is the 3d array to fill in; Dimensions: TOTAL_GENES, TOTAL_GENES * NUM_MICE, TOTAL_WEEKS
+    
+    """
+    # Read the file and initialize the array
+    with open(filename, 'r') as f:
+        # Read the first line to get the dimensions of the matrix
+        line = f.readline().strip()
+        dimensions = len(line.split(',')) - 1
+
+        matrix_week = filename.split("_")[-1].split(".")[0].split('w')[1] # get the week number
+
+        # Initialize the array with zeros
+        adj_matrix = np.zeros(shape=(dimensions,dimensions), dtype=bool)
+
+        # Read the rest of the lines to fill in the adjacency matrix, ignoring the first line and the first column
+        df = pd.read_csv(filename) 
+        # remove first column and row
+        df = df.drop(df.columns[0], axis=1)
+        df = df.drop(df.index[0])
+        # make df tl sparse tensor
+        adj_matrix = sptensor(df.values, dtype=bool)
+
+        for i, line in enumerate(f):
+            values = line.strip().split(',')[1:]
+            # adj_matrix[i] = [int(value) for value in values]
+            # make part of with y values start at mouse_index * TOTAL_GENES
+            for j, value in enumerate(values):
+                adj_matrix[i, mouse_index * TOTAL_GENES + j] = int(value)
+                A[i, mouse_index * TOTAL_GENES + j, matrix_week] = int(value)
+
+        # Convert the adjacency matrix to a boolean tensor
+        adj_matrix = tl.tensor(adj_matrix, dtype=bool)
+        adj_matrix = sparse.COO(adj_matrix)
+
+    return adj_matrix
 
 def read_adj_matrix_input(filename):
     """
@@ -25,16 +74,13 @@ def read_adj_matrix_input(filename):
         line = f.readline().strip()
         dimensions = len(line.split(',')) - 1
 
-        # Initialize the array with zeros
-        adj_matrix = np.zeros(shape=(dimensions,dimensions), dtype=bool)
-
         # Read the rest of the lines to fill in the adjacency matrix, ignoring the first line and the first column
-        for i, line in enumerate(f):
-            values = line.strip().split(',')[1:]
-            adj_matrix[i] = [int(value) for value in values]
-
-        # Convert the adjacency matrix to a boolean tensor
-        adj_matrix = tl.tensor(adj_matrix, dtype=bool)
+        df = pd.read_csv(filename) 
+        # remove first column and row
+        df = df.drop(df.columns[0], axis=1)
+        df = df.drop(df.index[0])
+        # make df tl sparse tensor
+        adj_matrix = sptensor(df.values, dtype=bool)
 
     return adj_matrix
 
@@ -58,6 +104,7 @@ def make_map_of_genes(filename):
     with open(filename, 'r') as f:
         # Read the first line to get the dimensions of the matrix
         line = f.readline().strip()
+        # output first line and int pair to csv file
         genes = line.split(',')[1:] # index to gene name, ignore first column
 
         gene_to_index = {}
@@ -65,7 +112,16 @@ def make_map_of_genes(filename):
         for i, gene in enumerate(genes):
             gene_to_index[gene] = i
 
+    # write them to file
+    with open("gene_to_index.csv", 'w') as f:
+        for gene, index in gene_to_index.items():
+            f.write(f"{gene},{index}\n")
+
     return gene_to_index, genes
+
+def test_mod(A):
+    # change first value in matrix
+    A[0,0] = -1
 
 
 if __name__ == "__main__":
