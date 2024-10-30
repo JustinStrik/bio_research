@@ -147,9 +147,11 @@ def read_edge_list_input(filepath):
         # make sparse tensor
         mouse_3d_matrix = sparse.DOK((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
         wb = openpyxl.load_workbook(filepath)
+        weeks = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
         
         # iter over sheets
         for sheet in wb.sheetnames:
+
             # get the week number
             if sheet == "Sheet1":
                 week = 0
@@ -157,6 +159,7 @@ def read_edge_list_input(filepath):
                 week = sheet.split('w')[-1]
             print(week)
             week = int(week)
+            weeks.remove(week)
             # get the sheet
             ws = wb[sheet]
             # get the values
@@ -164,12 +167,18 @@ def read_edge_list_input(filepath):
                 # get the values
                 gene1 = row[0].value
                 gene2 = row[1].value
-                mouse_3d_matrix[gene1, gene2, week] = 1
+                mouse_3d_matrix[gene1, gene2, week] = 1            
+
+
+    # make remaining weeks NaN
+    omitted_weeks = weeks
+    # for week in weeks: # will be done later with masking
+    #     mouse_3d_matrix[:, :, week] = np.nan # 181450, 107850 
 
     # convert to COO
     mouse_3d_matrix = sparse.COO(mouse_3d_matrix)
 
-    return mouse_3d_matrix
+    return mouse_3d_matrix, omitted_weeks
 
 
 if __name__ == "__main__":
