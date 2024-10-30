@@ -16,6 +16,8 @@ def get_adj_matrix_files():
 def get_edge_list_files():
     # directory "edge lists ints"
     files = [f for f in listdir("edge lists ints") if isfile(join("edge lists ints", f)) and f.endswith(".xlsm")]
+    # make absolute path
+    files = [join("edge lists ints", f) for f in files]
 
     return files
 
