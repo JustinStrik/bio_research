@@ -172,11 +172,12 @@ def read_edge_list_input(filepath):
 
     # make remaining weeks NaN
     omitted_weeks = weeks
-    # for week in weeks: # will be done later with masking
-    #     mouse_3d_matrix[:, :, week] = np.nan # 181450, 107850 
+    for week in weeks: # will be done later with masking
+        mouse_3d_matrix[:, :, week] = np.nan # 181450, 107850 
+        # theres a better way to do this using np
 
     # convert to COO
-    mouse_3d_matrix = sparse.COO(mouse_3d_matrix)
+    mouse_3d_matrix = sparse.COO(mouse_3d_matrix) # when debug is 2, 14,462,218 bytes
 
     return mouse_3d_matrix, omitted_weeks
 
@@ -186,7 +187,7 @@ if __name__ == "__main__":
     filename = "COHP_44940_480__F_B.xlsm"
     adj_matrix = read_edge_list_input(filename)
     print(adj_matrix)
-    print(adj_matrix.shape)
+    # print(adj_matrix.shape)
     
     gene_to_index, genes = make_map_of_genes(filename)
     print(gene_to_index)
