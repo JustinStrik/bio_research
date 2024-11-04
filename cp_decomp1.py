@@ -60,10 +60,24 @@ if __name__ == "__main__":
 
     A = np.concatenate(mouse_matrices, axis=1) # axis 1 is vertical
     # !! The concatenate changes the axis of the matrix to TOTAL_WEEKS * TOTAL_GENES * TOTAL_MICE x TOTAL_GENES
-    # changes axis to TOTAL_GENES x TOTAL_WEEKS * TOTAL_GENES * TOTAL_MICE
     # is 20x2864x1432, should be 1432x2864x20
     A = np.swapaxes(A, 0, 2) # this changes the axes, but not the .shape, so gotta do that too yo
     A.shape = (TOTAL_GENES, TOTAL_GENES * len(mouse_matrices), TOTAL_WEEKS) 
+
+    # mask missing values, all the missing weeks
+    mask = ~np.isnan(A)
+
+    # if cmd line input
+    if len(sys.argv) > 1:
+        rank = int(sys.argv[1])
+    else:
+        rank = 10
+
+    # Perform matrix factorization on matrix A with different initialization
+    decomposed = parafac(A, rank=rank, n_iter_max=20, init='svd', mask=mask) # if random, risk of being singular
+
+    val = 1
+
 
     # make sparse tensor
     # A = sparse.COO(A)
@@ -90,17 +104,8 @@ if __name__ == "__main__":
     #             A[val[0], i * TOTAL_GENES + val[1], week] = val[2]
 
 
-    A = read_adj_matrix_input("results_adj_COHP_44940_480__F_B_w0.csv")
-    dimensions = A.shape
-
-    # get total nnz values
-    nnz = np.count_nonzero(A)
-
-    # if cmd line input
-    if len(sys.argv) > 1:
-        rank = int(sys.argv[1])
-    else:
-        rank = 10
+    # A = read_adj_matrix_input("results_adj_COHP_44940_480__F_B_w0.csv")
+    # dimensions = A.shape
 
     # Perform matrix factorization on matrix A with different initialization
     decomposed = parafac(A, rank=10, n_iter_max=20, init='svd') # if random, risk of being singular
