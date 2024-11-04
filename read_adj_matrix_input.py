@@ -145,7 +145,7 @@ def read_edge_list_input(filepath):
         # Read the rest of the lines to fill in the adjacency matrix, ignoring the first line and the first column
         # make the two gene names the indices of the matrix
         # make sparse tensor
-        mouse_3d_matrix = sparse.DOK((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
+        coords_of_edges = [] # list of quadruples of coordinates of edges, (1, gene1, gene2, week), 1 is the value of the edge
         wb = openpyxl.load_workbook(filepath)
         weeks = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
         
@@ -167,19 +167,21 @@ def read_edge_list_input(filepath):
                 # get the values
                 gene1 = row[0].value
                 gene2 = row[1].value
-                mouse_3d_matrix[gene1, gene2, week] = 1            
+                coords_of_edges.append((1, gene1, gene2, week))
 
+    data, x_indices, y_indices, z_indices = zip(*coords_of_edges)
+    # convert data to boolean
+    data = np.array(data, dtype=bool)
+    mouse_3d_matrix = sparse.COO((x_indices, y_indices, z_indices), data=data, shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS))
+    # sptensor(data, (x_indices, y_indices, z_indices), shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
+    # make np sparse tensor
 
     # make remaining weeks NaN
-    omitted_weeks = weeks
+    mask = np.zeros((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
     for week in weeks: # will be done later with masking
-        mouse_3d_matrix[:, :, week] = np.nan # 181450, 107850 
-        # theres a better way to do this using np
+        mask[:, :, week] = True # 181450, 107850 
 
-    # convert to COO
-    mouse_3d_matrix = sparse.COO(mouse_3d_matrix) # when debug is 2, 14,462,218 bytes
-
-    return mouse_3d_matrix, omitted_weeks
+    return mouse_3d_matrix, mask
 
 
 if __name__ == "__main__":

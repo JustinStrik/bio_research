@@ -48,11 +48,13 @@ if __name__ == "__main__":
 
     # get matrix from edge list for each mouse
     mouse_matrices = []
+    mouse_masks = []
     for i, file in enumerate(files):
         if (i >= DEBUG_MAX):
             break
-        mouse_matrix, missing_weeks = read_edge_list_input(file)
+        mouse_matrix, mask = read_edge_list_input(file)
         mouse_matrices.append(mouse_matrix)
+        mouse_masks.append(mask)
 
     # stack them all vertically
     # mouse_matrices is an array of sparse matrices
@@ -61,11 +63,11 @@ if __name__ == "__main__":
     A = np.concatenate(mouse_matrices, axis=1) # axis 1 is vertical
     # !! The concatenate changes the axis of the matrix to TOTAL_WEEKS * TOTAL_GENES * TOTAL_MICE x TOTAL_GENES
     # is 20x2864x1432, should be 1432x2864x20
-    A = np.swapaxes(A, 0, 2) # this changes the axes, but not the .shape, so gotta do that too yo
-    A.shape = (TOTAL_GENES, TOTAL_GENES * len(mouse_matrices), TOTAL_WEEKS) 
+    # A = np.swapaxes(A, 0, 2) # this changes the axes, but not the .shape, so gotta do that too yo
+    # A.shape = (TOTAL_GENES, TOTAL_GENES * len(mouse_matrices), TOTAL_WEEKS) 
 
-    # mask missing values, all the missing weeks
-    mask = ~np.isnan(A)
+    # do same for masks
+    mask = np.concatenate(mouse_masks, axis=1) # this works actually
 
     # if cmd line input
     if len(sys.argv) > 1:
@@ -73,8 +75,14 @@ if __name__ == "__main__":
     else:
         rank = 10
 
+    # check if mask and A are the same shape
+    print("mask shape")
+    print(mask.shape)
+    print("A shape")
+    print(A.shape)
+
     # Perform matrix factorization on matrix A with different initialization
-    decomposed = parafac(A, rank=rank, n_iter_max=20, init='svd', mask=mask) # if random, risk of being singular
+    decomposed = parafac(A, rank=rank, n_iter_max=2, init='random', mask=mask) # if random, risk of being singular
 
     val = 1
 
