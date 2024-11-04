@@ -71,9 +71,9 @@ if __name__ == "__main__":
 
     # if cmd line input
     if len(sys.argv) > 1:
-        rank = int(sys.argv[1])
+        RANK = int(sys.argv[1])
     else:
-        rank = 10
+        RANK = 80
 
     # check if mask and A are the same shape
     print("mask shape")
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     print(A.shape)
 
     # Perform matrix factorization on matrix A with different initialization
-    decomposed = parafac(A, rank=rank, n_iter_max=2, init='random', mask=mask) # if random, risk of being singular
+    decomposed = parafac(A, rank=RANK, n_iter_max=2, init='random', mask=mask) # if random, risk of being singular
 
     val = 1
 
