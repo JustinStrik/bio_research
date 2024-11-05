@@ -12,7 +12,7 @@ import scipy.sparse as sp
 TOTAL_GENES = 1432
 TOTAL_WEEKS = 20
 TOTAL_MICE = 2
-DEBUG_MAX = 2
+DEBUG_MAX = 1
 
 # tl.kruskal_to_tensor is a function in the TensorLy library used to reconstruct a full tensor from its Kruskal decomposition (CP decomposition).
 # pass in both the original matrix and the decomposed matrix
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         RANK = int(sys.argv[1])
     else:
-        RANK = 80
+        RANK = 10
 
     # check if mask and A are the same shape
     print("mask shape")
@@ -81,8 +81,11 @@ if __name__ == "__main__":
     print("A shape")
     print(A.shape)
 
+    # change A from sparse to dense using todense()
+    A = A.todense()
+    
     # Perform matrix factorization on matrix A with different initialization
-    decomposed = parafac(A, rank=RANK, n_iter_max=2, init='random', mask=mask) # if random, risk of being singular
+    decomposed = parafac(A, rank=RANK, n_iter_max=2, init='svd', mask=mask) # if random, risk of being singular
 
     val = 1
 
