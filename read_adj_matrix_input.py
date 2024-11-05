@@ -177,9 +177,9 @@ def read_edge_list_input(filepath):
     # make np sparse tensor
 
     # make remaining weeks NaN
-    mask = np.zeros((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
+    mask = np.ones((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
     for week in weeks: # will be done later with masking
-        mask[:, :, week] = True # 181450, 107850 
+        mask[:, :, week] = False # 181450, 107850 # mask is 0 where values are missing
 
     return mouse_3d_matrix, mask
 
