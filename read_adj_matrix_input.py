@@ -176,14 +176,20 @@ def read_edge_list_input(filepath):
     # sptensor(data, (x_indices, y_indices, z_indices), shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
     # make np sparse tensor
 
+    weeks_with_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
+    
     # make remaining weeks NaN
     mask = np.ones((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
     for week in weeks: # will be done later with masking
         mask[:, :, week] = False # 181450, 107850 # mask is 0 where values are missing
+        weeks_with_sheets.remove(week)
 
     return mouse_3d_matrix, mask
 
-
+# assigns the 2d array at index to the new_mouse_index in the 3d array new_mouse_index
+def align(mouse_arr, new_mouse_arr, index, new_mouse_index):
+    new_mouse_arr[:, :, new_mouse_index] = mouse_arr[:, :, index]
+    
 if __name__ == "__main__":
     # Test the read_adj_matrix_input function
     filename = "COHP_44940_480__F_B.xlsm"

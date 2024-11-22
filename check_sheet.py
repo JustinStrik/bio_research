@@ -9,11 +9,13 @@ TOTAL_GENES = 1432
 # check_against_test_sheet(sheet_orig, sheet_generated)
 # get True Positive, False Positive, True Negative, False Negative as tp, fp, tn, fn
 
-def check_against_test_sheet(sheet_orig, sheet_generated, threshold):
+def check_against_test_sheet(sheet_orig, sheet_generated):
     tp = 0
     fp = 0
     tn = 0
     fn = 0
+
+    threshold = find_float_threshold(sheet_orig, sheet_generated)
 
     for i in range(TOTAL_GENES):
         for j in range(TOTAL_GENES):

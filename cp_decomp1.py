@@ -6,7 +6,9 @@ from get_adj_matrix_files import get_adj_matrix_files, get_edge_list_files
 import sys
 import sparse
 import scipy.sparse as sp
+from check_sheet import check_against_test_sheet
 
+global execution_report_file # name later when we know the sheet index (x,y)
 
 # constants
 TOTAL_GENES = 1432
@@ -56,16 +58,11 @@ if __name__ == "__main__":
         mouse_matrices.append(mouse_matrix)
         mouse_masks.append(mask)
 
-    # stack them all vertically
+    # stack them all verticallyx
     # mouse_matrices is an array of sparse matrices
     # make it a sparse matrix
 
     A = np.concatenate(mouse_matrices, axis=1) # axis 1 is vertical
-    # !! The concatenate changes the axis of the matrix to TOTAL_WEEKS * TOTAL_GENES * TOTAL_MICE x TOTAL_GENES
-    # is 20x2864x1432, should be 1432x2864x20
-    # A = np.swapaxes(A, 0, 2) # this changes the axes, but not the .shape, so gotta do that too yo
-    # A.shape = (TOTAL_GENES, TOTAL_GENES * len(mouse_matrices), TOTAL_WEEKS) 
-
     # do same for masks
     mask = np.concatenate(mouse_masks, axis=1) # this works actually
 
@@ -86,8 +83,11 @@ if __name__ == "__main__":
     
     # Perform matrix factorization on matrix A with different initialization
     decomposed = parafac(A, rank=RANK, n_iter_max=2, init='svd', mask=mask) # if random, risk of being singular
+    decomposed_array = tl.kruskal_to_tensor(decomposed)
 
-    val = 1
+    focused_array = decomposed_array[0]
+
+    check_against_test_sheet(A, decomposed_array)
 
 
     # make sparse tensor
@@ -121,5 +121,5 @@ if __name__ == "__main__":
     # Perform matrix factorization on matrix A with different initialization
     decomposed = parafac(A, rank=10, n_iter_max=20, init='svd') # if random, risk of being singular
 
-    test_single_value_accuracy(A, decomposed)
 
+    test_single_value_accuracy(A, decomposed)
