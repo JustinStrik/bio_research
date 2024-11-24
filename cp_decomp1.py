@@ -1,7 +1,7 @@
 import numpy as np
 import tensorly as tl
 from tensorly.decomposition import parafac, non_negative_parafac
-from read_adj_matrix_input import read_adj_matrix_input, test_mod, read_edge_list_input
+from read_adj_matrix_input import read_adj_matrix_input, test_mod, read_edge_list_input, get_full_matrix
 from get_adj_matrix_files import get_adj_matrix_files, get_edge_list_files
 import sys
 import sparse
@@ -14,7 +14,7 @@ global execution_report_file # name later when we know the sheet index (x,y)
 TOTAL_GENES = 1432
 TOTAL_WEEKS = 20
 TOTAL_MICE = 2
-DEBUG_MAX = 1
+DEBUG_MAX = 2
 
 # tl.kruskal_to_tensor is a function in the TensorLy library used to reconstruct a full tensor from its Kruskal decomposition (CP decomposition).
 # pass in both the original matrix and the decomposed matrix
@@ -49,22 +49,7 @@ if __name__ == "__main__":
     # each row is an edge connecting two genes
 
     # get matrix from edge list for each mouse
-    mouse_matrices = []
-    mouse_masks = []
-    for i, file in enumerate(files):
-        if (i >= DEBUG_MAX):
-            break
-        mouse_matrix, mask = read_edge_list_input(file)
-        mouse_matrices.append(mouse_matrix)
-        mouse_masks.append(mask)
-
-    # stack them all verticallyx
-    # mouse_matrices is an array of sparse matrices
-    # make it a sparse matrix
-
-    A = np.concatenate(mouse_matrices, axis=1) # axis 1 is vertical
-    # do same for masks
-    mask = np.concatenate(mouse_masks, axis=1) # this works actually
+    A, mask = get_full_matrix(files, DEBUG_MAX)
 
     # if cmd line input
     if len(sys.argv) > 1:
