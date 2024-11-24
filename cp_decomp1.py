@@ -1,7 +1,7 @@
 import numpy as np
 import tensorly as tl
 from tensorly.decomposition import parafac, non_negative_parafac
-from read_adj_matrix_input import read_adj_matrix_input, test_mod, read_edge_list_input, get_full_matrix
+from read_input import read_adj_matrix_input, test_mod, read_edge_list_input, get_full_matrix
 from get_adj_matrix_files import get_adj_matrix_files, get_edge_list_files
 import sys
 import sparse
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # each row is an edge connecting two genes
 
     # get matrix from edge list for each mouse
-    A, mask = get_full_matrix(files, DEBUG_MAX)
+    A, mask = get_full_matrix(DEBUG_MAX)
 
     # if cmd line input
     if len(sys.argv) > 1:
