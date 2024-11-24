@@ -13,7 +13,7 @@ global execution_report_file # name later when we know the sheet index (x,y)
 # constants
 TOTAL_GENES = 1432
 TOTAL_WEEKS = 20
-TOTAL_MICE = 2
+TOTAL_MICE = 20
 DEBUG_MAX = 2
 
 # tl.kruskal_to_tensor is a function in the TensorLy library used to reconstruct a full tensor from its Kruskal decomposition (CP decomposition).
