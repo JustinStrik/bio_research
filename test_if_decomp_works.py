@@ -7,7 +7,7 @@ import numpy as np
 tensor = np.ones((3, 3, 3))
 
 # decompose tensor into 3 factors
-factors = parafac(tensor, rank=20, init='random', n_iter_max=10)
+factors = parafac(tensor, rank=20, init='random', n_iter_max=100)
 
 # create tensor2 that has a 5 in the middle, and ones elsewhere
 tensor2 = np.ones((3, 3, 3))
@@ -25,12 +25,13 @@ reconstructed_tensor = kruskal_to_tensor(factors)
 print(reconstructed_tensor[1, 1, 1])  # should print 1
 
 # now mask the middle factor of tensor2
-mask = np.ones((3, 3, 3))
-mask[1, 1, 1] = 0
+mask_ = np.ones((3, 3, 3))
+mask_[1, 1, 1] = 0
 
 # mask the middle factor of tensor2
-factors2_withmask = parafac(tensor2 * mask, rank=20, init='random', n_iter_max=100)
+factors2_withmask = parafac(tensor2, rank=20, init='random', n_iter_max=100, mask=mask_)
 
+print(factors2_withmask)
 # see if middle factor is 1, use kruskal_to_tensor
 reconstructed_tensor2_withmask = kruskal_to_tensor(factors2_withmask)
 print(reconstructed_tensor2_withmask[1, 1, 1])  # should print 1
