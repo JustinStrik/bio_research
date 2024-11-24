@@ -1,7 +1,9 @@
 import numpy as np
 import tensorflow as tf
-from read_adj_matrix_input import read_adj_matrix_input, test_mod, read_edge_list_input, get_full_matrix
+from read_input import read_adj_matrix_input, test_mod, read_edge_list_input, get_full_matrix
 from get_adj_matrix_files import get_adj_matrix_files, get_edge_list_files
+model = tf.keras.models.Sequential()
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Masking
 from sklearn.model_selection import train_test_split
