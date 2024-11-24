@@ -125,6 +125,24 @@ def test_mod(A):
     # change first value in matrix
     A[0,0] = -1
 
+def get_full_matrix(files, DEBUG_MAX):
+    mouse_matrices = []
+    mouse_masks = []
+    for i, file in enumerate(files):
+        if (i >= DEBUG_MAX):
+            break
+        mouse_matrix, mask = read_edge_list_input(file)
+        mouse_matrices.append(mouse_matrix)
+        mouse_masks.append(mask)
+
+    # stack them all verticallyx
+    # mouse_matrices is an array of sparse matrices
+    A = np.concatenate(mouse_matrices, axis=1) # axis 1 is vertical
+    # do same for masks
+    mask = np.concatenate(mouse_masks, axis=1) # this works actually
+
+    return A, mask
+
 def read_edge_list_input(filepath):
     """
     Read the input edge list from a file and return it as a numpy array.
@@ -137,6 +155,7 @@ def read_edge_list_input(filepath):
     """
     # Sheet 1 is Week 0, all other sheets are labeled by week, last characters after w is the week number
     # each line is an edge between two genes
+
 
     with open(filepath, 'r') as f:
         # Read the first line to get the dimensions of the matrix
