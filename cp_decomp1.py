@@ -29,8 +29,10 @@ def test_single_value_accuracy(A, decomposed):
     # find how well the decomposition works on random specific values
     for i in range(10):
         # random values for the indices
-        i = np.random.randint(dimensions[0])
-        j = np.random.randint(dimensions[1])
+        # i = np.random.randint(dimensions[0])
+        # j = np.random.randint(dimensions[1])
+        i = np.random.randint(TOTAL_GENES)
+        j = np.random.randint(TOTAL_GENES * TOTAL_MICE)
 
         # print the error for the specific values in the array
         print("The error for", i, j, "is: ")
