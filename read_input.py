@@ -224,7 +224,8 @@ def read_edge_list_input(filepath, mouse_index):
                 # get the values
                 gene1 = row[0].value
                 gene2 = row[1].value
-                coords_of_edges.append((1, gene1, gene2, week))
+                week_index = mouse_alignment[week] # get the index of the week in the alignment matrix
+                coords_of_edges.append((1, gene1, gene2, week_index))
 
     data, x_indices, y_indices, z_indices = zip(*coords_of_edges)
     # convert data to boolean
@@ -233,6 +234,7 @@ def read_edge_list_input(filepath, mouse_index):
     # sptensor(data, (x_indices, y_indices, z_indices), shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
     # make np sparse tensor
 
+    # init, all weeks are present, remove the ones that are not
     weeks_with_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
     
     # make remaining weeks NaN
@@ -242,23 +244,6 @@ def read_edge_list_input(filepath, mouse_index):
         weeks_with_sheets.remove(week)
 
     return mouse_3d_matrix, mask
-
-# A is the original tensor, just stacked, al is the alignment
-# def align_full_matrix(A, al):
-#     # new_A size is (TOTAL_GENES, TOTAL_GENES * NUM_MICE, al.shape[1]), where al.shape[1] is the number of alignments
-#     new_A = np.zeros((TOTAL_GENES, TOTAL_GENES * 20, al.shape[1]))
-
-#     # where i is new_time, j 
-#     for new_arr_time_index, alignment in enumerate(al):
-#         for mouse, time in enumerate(alignment):
-#             # if index is an integer
-#             if isinstance(index, int):
-#                 align(A, new_A, index, i)
-    
-
-# # assigns the 2d array at index to the new_mouse_index in the 3d array new_mouse_index
-# def align(mouse_arr, new_mouse_arr, index, new_mouse_index, time, new_time):
-#     new_A[]
     
 if __name__ == "__main__":
     # Test the read_adj_matrix_input function
