@@ -1,14 +1,9 @@
 import numpy as np
 import tensorflow as tf
-from read_input import read_adj_matrix_input, test_mod, read_edge_list_input, get_full_matrix
-from get_adj_matrix_files import get_adj_matrix_files, get_edge_list_files
-model = tf.keras.models.Sequential()
-
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Masking
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-
 
 # Function to create a sample 3D array with missing values
 def create_sample_data():
@@ -27,16 +22,16 @@ def build_model(input_shape, mask_value):
     model = Sequential()
     model.add(Masking(mask_value=mask_value, input_shape=input_shape))
     model.add(LSTM(50, return_sequences=True))
-    model.add(LSTM(50))
-    model.add(Dense(input_shape[-1], activation='sigmoid'))
-    model.compile(optimizer='adam', loss='binary_crossentropy')
+    model.add(LSTM(50, return_sequences=True))
+    model.add(Dense(input_shape[-1]))  # Output shape should match the input shape
+    model.compile(optimizer='adam', loss='mean_squared_error')
     return model
 
-# Function to train the model and impute missing values
+# Function to impute missing values using the LSTM model
 def impute_missing_values(train_data, test_data, mask_value):
     input_shape = (train_data.shape[1], train_data.shape[2])
     model = build_model(input_shape, mask_value)
-    
+
     # Reshape data for LSTM input
     X_train = train_data.reshape((train_data.shape[0], train_data.shape[1], train_data.shape[2]))
     
@@ -52,13 +47,16 @@ def impute_missing_values(train_data, test_data, mask_value):
     
     return test_data
 
+# Function to evaluate the imputed data
+def evaluate_imputation(original_data, imputed_data, mask_value):
+    # Only compare the values that were originally masked
+    mask = original_data == mask_value
+    mse = mean_squared_error(original_data[mask], imputed_data[mask])
+    return mse
 
 if __name__ == "__main__":
     # Create sample data with missing values
     data = create_sample_data()
-
-    # files = get_edge_list_files()
-    # A, mask = get_full_matrix(files, 2)
 
     # Preprocess the data
     data, mask_value = preprocess_data(data)
@@ -66,10 +64,20 @@ if __name__ == "__main__":
     # Split the data into training and testing sets
     train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
 
-    # Impute missing values using the LSTM model
-    imputed_test_data = impute_missing_values(train_data, test_data, mask_value)
+    # Impute missing values
+    imputed_data = impute_missing_values(train_data, test_data, mask_value)
 
-    # Calculate the mean squared error between original and imputed test data for evaluation
-    mse = mean_squared_error(test_data[test_data != mask_value], imputed_test_data[test_data != mask_value])
+    # Create a validation set with known values (use float type to allow NaNs)
+    validation_data = np.random.choice([0.0, 1.0], size=(20, 10, 10), p=[0.5, 0.5])
+    validation_data_with_missing = validation_data.copy()
+    validation_data_with_missing[np.random.rand(*validation_data_with_missing.shape) < 0.1] = np.nan
 
-    print("Mean Squared Error between original and imputed test data:", mse)
+    # Preprocess the validation data
+    validation_data_with_missing, _ = preprocess_data(validation_data_with_missing)
+
+    # Impute missing values in the validation set
+    imputed_validation_data = impute_missing_values(train_data, validation_data_with_missing, mask_value)
+
+    # Evaluate the imputed data
+    mse = evaluate_imputation(validation_data, imputed_validation_data, mask_value)
+    print(f"Mean Squared Error of Imputation: {mse}")
