@@ -22,6 +22,7 @@ import re
 
 TOTAL_GENES = 1432
 TOTAL_WEEKS = 20
+TOTAL_WEEKS_WITH_ALIGNMENT = 106
 
 def read_adj_matrix_input(filename, A, mouse_index):
     """
@@ -191,9 +192,11 @@ def read_edge_list_input(filepath, mouse_index):
     # each line is an edge between two genes
 
     al = get_alignment_matrix()
-    A_y_length = len(al) # length with time alignment separated
+    A_time_length = len(al) # length with time alignment separated
 
     mouse_alignment = get_week_alignment_for_mouse(mouse_index, al)
+    weeks_without_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
+
 
     with open(filepath, 'r') as f:
         # Read the first line to get the dimensions of the matrix
@@ -204,7 +207,6 @@ def read_edge_list_input(filepath, mouse_index):
         # make sparse tensor
         coords_of_edges = [] # list of quadruples of coordinates of edges, (1, gene1, gene2, week), 1 is the value of the edge
         wb = openpyxl.load_workbook(filepath)
-        weeks = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
         
         # iter over sheets
         for sheet in wb.sheetnames:
@@ -214,9 +216,11 @@ def read_edge_list_input(filepath, mouse_index):
                 week = 0
             else:
                 week = sheet.split('w')[-1]
+
             print(week)
             week = int(week)
-            weeks.remove(week)
+            weeks_without_sheets.remove(week)
+
             # get the sheet
             ws = wb[sheet]
             # get the values
@@ -230,18 +234,16 @@ def read_edge_list_input(filepath, mouse_index):
     data, x_indices, y_indices, z_indices = zip(*coords_of_edges)
     # convert data to boolean
     data = np.array(data, dtype=bool)
-    mouse_3d_matrix = sparse.COO((x_indices, y_indices, z_indices), data=data, shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS))
+    mouse_3d_matrix = sparse.COO((x_indices, y_indices, z_indices), data=data, shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS_WITH_ALIGNMENT))
     # sptensor(data, (x_indices, y_indices, z_indices), shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
     # make np sparse tensor
 
-    # init, all weeks are present, remove the ones that are not
-    weeks_with_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
-    
+    # init earlier, weeks with sheets, all weeks are present, remove the ones that are not    
     # make remaining weeks NaN
-    mask = np.ones((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS), dtype=bool)
-    for week in weeks: # will be done later with masking
-        mask[:, :, week] = False # 181450, 107850 # mask is 0 where values are missing
-        weeks_with_sheets.remove(week)
+    mask = np.ones((TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS_WITH_ALIGNMENT), dtype=bool)
+    for week in weeks_without_sheets: # will be done later with masking
+        mask[:, :, mouse_alignment[week]] = False # 181450, 107850 # mask is 0 where values are missing
+        weeks_without_sheets.remove(week)
 
     return mouse_3d_matrix, mask
     
@@ -249,7 +251,7 @@ if __name__ == "__main__":
     # Test the read_adj_matrix_input function
     filename = "COHP_44940_480__F_B.xlsm"
 
-    adj_matrix = get_full_matrix(['COHP_44940_480__F_B.xlsm'], 2)
+    adj_matrix = get_full_matrix(2)
     print(adj_matrix)
     # print(adj_matrix.shape)
     
