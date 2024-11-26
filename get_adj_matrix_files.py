@@ -15,10 +15,15 @@ def get_adj_matrix_files():
 
 def get_edge_list_files():
     # directory "edge lists ints"
-    files = [f for f in listdir("edge lists ints") if isfile(join("edge lists ints", f)) and f.endswith(".xlsm")]
-    # make absolute path
-    files = [join("edge lists ints", f) for f in files]
+    # files = [f for f in listdir("edge lists ints") if isfile(join("edge lists ints", f)) and f.endswith(".xlsm")]
+    # # make absolute path
+    # files = [join("edge lists ints", f) for f in files]
 
+    # 50_900_updated - Copy (2)/1_COHP_46966_502__F_D.xlsm 50_900_updated - Copy (2)/2_COHP_46939_477__F_B.xlsm 50_900_updated - Copy (2)/3_COHP_46983_512__F_D.xlsm 50_900_updated - Copy (2)/4_COHP_44940_480__F_B.xlsm 50_900_updated - Copy (2)/5_COHP_47000_507__F_D.xlsm 50_900_updated - Copy (2)/6_COHP_49264_513__F_D.xlsm 50_900_updated - Copy (2)/7_COHP_49205_487__F_B.xlsm 50_900_updated - Copy (2)/8_COHP_46903_483__F_A.xlsm 50_900_updated - Copy (2)/9_COHP_46891_482__F_A.xlsm 50_900_updated - Copy (2)/10_COHP_49224_542__F_B.xlsm 50_900_updated - Copy (2)/11_COHP_47017_508__F_D.xlsm 50_900_updated - Copy (2)/12_COHP_44997_541__F_B.xlsm 50_900_updated - Copy (2)/13_COHP_46915_545__F_A.xlsm 50_900_updated - Copy (2)/14_COHP_44978_490__N_C.xlsm 50_900_updated - Copy (2)/15_COHP_49241_514__F_D.xlsm 50_900_updated - Copy (2)/16_COHP_44959_489__N_C.xlsm 50_900_updated - Copy (2)/17_COHP_46879_476__F_A.xlsm 50_900_updated - Copy (2)/18_COHP_46927_484__F_B.xlsm 50_900_updated - Copy (2)/19_COHP_46947_488__N_C.xlsm 50_900_updated - Copy (2)/20_COHP_49252_511__F_D.xlsm 
+    # # make above into a list but replace 50_900_updated - Copy (2)/ with edge lists ints/
+    # keep in that order
+    files = ["edge lists ints/1_COHP_46966_502__F_D.xlsm", "edge lists ints/2_COHP_46939_477__F_B.xlsm", "edge lists ints/3_COHP_46983_512__F_D.xlsm", "edge lists ints/4_COHP_44940_480__F_B.xlsm", "edge lists ints/5_COHP_47000_507__F_D.xlsm", "edge lists ints/6_COHP_49264_513__F_D.xlsm", "edge lists ints/7_COHP_49205_487__F_B.xlsm", "edge lists ints/8_COHP_46903_483__F_A.xlsm", "edge lists ints/9_COHP_46891_482__F_A.xlsm", "edge lists ints/10_COHP_49224_542__F_B.xlsm", "edge lists ints/11_COHP_47017_508__F_D.xlsm", "edge lists ints/12_COHP_44997_541__F_B.xlsm", "edge lists ints/13_COHP_46915_545__F_A.xlsm", "edge lists ints/14_COHP_44978_490__N_C.xlsm", "edge lists ints/15_COHP_49241_514__F_D.xlsm", "edge lists ints/16_COHP_44959_489__N_C.xlsm", "edge lists ints/17_COHP_46879_476__F_A.xlsm", "edge lists ints/18_COHP_46927_484__F_B.xlsm", "edge lists ints/19_COHP_46947_488__N_C.xlsm", "edge lists ints/20_COHP_49252_511__F_D.xlsm"]    
+             
     return files
 
 
