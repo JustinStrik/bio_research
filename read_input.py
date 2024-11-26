@@ -141,25 +141,27 @@ def test_mod(A):
     A[0,0] = -1
 
 # index is the index of the mouse, alignments is the alignment 2D matrix
-def get_week_alignment_for_mouse(mouse_index, alignments):
+def get_week_alignment_for_mouse(mouse_index, alignments, weeks_with_sheets):
     # each row is a time, each column is a mouse
     # find values where the column is an integer
     # get the row of the integer
     # make array of them, should return the int->row mapping
 
     alignment_mapping = {}
+    print(mouse_index)
+    if mouse_index == 7:
+         print(alignments)
 
     # i is the time (index)
     for i in range(alignments.shape[0]):
         week = alignments[i, mouse_index]
+        ideal_week = weeks_with_sheets[int(week)] # get the week number from the weeks with sheets array
         # week is 3.0 but is not an integer, so we must check if it is an instance of an integer
-        if week > 16:
-            print("test")
         
         if week.is_integer():
-            alignment_mapping[int(week)] = i
+            alignment_mapping[ideal_week] = i
 
-    return alignment_mapping
+    return alignment_mapping # pair is (week number -> index in alignment matrix)
 
 def get_full_matrix(DEBUG_MAX):
     files = get_edge_list_files()
@@ -169,17 +171,32 @@ def get_full_matrix(DEBUG_MAX):
     for i, file in enumerate(files):
         if (i >= DEBUG_MAX):
             break
-        mouse_matrix, mask = read_edge_list_input(file, i, 1)
-        mouse_matrices.append(mouse_matrix)
-        mouse_masks.append(mask)
+        new_mouse_matrix = read_edge_list_input(file, i, 1)
+        # mouse_matrices.append(new_mouse_matrix)
+        # change to one long np array, it's an array of tuples
+        mouse_matrices = mouse_matrices + new_mouse_matrix
+        # mouse_masks.append(mask)
 
+    return mouse_matrices
     # stack them all verticallyx
     # mouse_matrices is an array of sparse matrices
     A = np.concatenate(mouse_matrices, axis=1) # axis 1 is vertical
     # do same for masks
-    mask = np.concatenate(mouse_masks, axis=1) # this works actually
+    # mask = np.concatenate(mouse_masks, axis=1) # this works actually
 
     return A, mask
+
+# find which weeks have sheets in the excel file
+def get_weeks_with_sheets(filepath):
+    wb = openpyxl.load_workbook(filepath)
+    weeks_with_sheets = []
+    for sheet in wb.sheetnames:
+        if sheet == "Sheet1":
+            weeks_with_sheets.append(0)
+        else:
+            weeks_with_sheets.append(int(sheet.split('w')[-1]))
+
+    return weeks_with_sheets
 
 def read_edge_list_input(filepath, mouse_index):
     """
@@ -194,12 +211,6 @@ def read_edge_list_input(filepath, mouse_index):
     # Sheet 1 is Week 0, all other sheets are labeled by week, last characters after w is the week number
     # each line is an edge between two genes
 
-    al = get_alignment_matrix()
-    # A_time_length = len(al) # length with time alignment separated # change to const TOTAL_WEEKS_WITH_ALIGNMENT
-
-    mouse_alignment = get_week_alignment_for_mouse(mouse_index, al)
-    weeks_without_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
-
 
     with open(filepath, 'r') as f:
         # Read the first line to get the dimensions of the matrix
@@ -210,6 +221,13 @@ def read_edge_list_input(filepath, mouse_index):
         # make sparse tensor
         coords_of_edges = [] # list of quadruples of coordinates of edges, (1, gene1, gene2, week), 1 is the value of the edge
         wb = openpyxl.load_workbook(filepath)
+
+        al = get_alignment_matrix()
+        weeks_with_sheets = get_weeks_with_sheets(filepath)
+        # A_time_length = len(al) # length with time alignment separated # change to const TOTAL_WEEKS_WITH_ALIGNMENT
+
+        mouse_alignment = get_week_alignment_for_mouse(mouse_index, al, weeks_with_sheets)
+        weeks_without_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
         
         # iter over sheets
         for sheet in wb.sheetnames:
@@ -254,15 +272,16 @@ def read_edge_list_input(filepath, mouse_index):
 # extra arg to make it a different function
 def read_edge_list_input(filepath, mouse_index, extra_arg):
 
-    al = get_alignment_matrix()
-    A_time_length = len(al) # length with time alignment separated
-
-    mouse_alignment = get_week_alignment_for_mouse(mouse_index, al)
-    weeks_without_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
-
     # Read the Excel file into a pandas DataFrame
     wb = openpyxl.load_workbook(filepath)
     coords_of_edges = []
+
+    al = get_alignment_matrix()
+    A_time_length = len(al) # length with time alignment separated
+
+    weeks_with_sheets = get_weeks_with_sheets(filepath)
+    mouse_alignment = get_week_alignment_for_mouse(mouse_index, al, weeks_with_sheets)
+    weeks_without_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
 
     # Iterate over each sheet in the Excel file
     for sheet in wb.sheetnames:
@@ -282,11 +301,14 @@ def read_edge_list_input(filepath, mouse_index, extra_arg):
         for row in ws.iter_rows(min_row=0, max_row=ws.max_row, min_col=0, max_col=2):
             gene1 = row[0].value
             gene2 = row[1].value
-            coords_of_edges.append((1, gene1, gene2, week_index)) # week index is the index of the week in the alignment matrix
+            coords_of_edges.append((gene1, gene2 + TOTAL_GENES * mouse_index, week_index)) # week index is the index of the week in the alignment matrix # omit 1
+
+    return coords_of_edges
 
     # Extract the coordinates and data
     data, x_indices, y_indices, z_indices = zip(*coords_of_edges)
     data = np.array(data, dtype=bool)
+
 
     # Create the sparse matrix
     mouse_3d_matrix = sparse.COO((x_indices, y_indices, z_indices), data=data, shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS_WITH_ALIGNMENT))
@@ -298,15 +320,27 @@ if __name__ == "__main__":
     # Test the read_adj_matrix_input function
     filename = "COHP_44940_480__F_B.xlsm"
 
-    adj_matrix = get_full_matrix(2)
-    print(adj_matrix)
+    adj_matrix = get_full_matrix(20)
+    # print(adj_matrix)
     # print(adj_matrix.shape)
     
-    gene_to_index, genes = make_map_of_genes(filename)
-    print(gene_to_index)
-    print(genes)
+    # gene_to_index, genes = make_map_of_genes(filename)
+    # print(gene_to_index)
+    # print(genes)
+
+    # adj_matrix now just a list of data, points
+    # use np to output the coordinates of the edges to a file
+    with open("full_matrix_with_alignment.csv", "w") as f:
+        for coords in adj_matrix:
+            f.write(f"{coords[0]},{coords[1]},{coords[2]}\n")
 
     # output the coordinates of the edges to a file
-    with open("full_matrix_with_alignment.csv", "w") as f:
-        print("writing to file")
+    # with open("full_matrix_with_alignment.csv", "w") as f:
+    #     # print sparse matrix coordinates, easy because COO format
+    #     for i in range(adj_matrix.shape[0]):
+    #         for j in range(adj_matrix.shape[1]):
+    #             for k in range(adj_matrix.shape[2]):
+    #                 if adj_matrix[i,j,k]:
+    #                     f.write(f"{i},{j},{k}\n")
+        
 
