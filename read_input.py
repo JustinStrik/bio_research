@@ -153,6 +153,9 @@ def get_week_alignment_for_mouse(mouse_index, alignments):
     for i in range(alignments.shape[0]):
         week = alignments[i, mouse_index]
         # week is 3.0 but is not an integer, so we must check if it is an instance of an integer
+        if week > 16:
+            print("test")
+        
         if week.is_integer():
             alignment_mapping[int(week)] = i
 
@@ -166,7 +169,7 @@ def get_full_matrix(DEBUG_MAX):
     for i, file in enumerate(files):
         if (i >= DEBUG_MAX):
             break
-        mouse_matrix, mask = read_edge_list_input(file, i)
+        mouse_matrix, mask = read_edge_list_input(file, i, 1)
         mouse_matrices.append(mouse_matrix)
         mouse_masks.append(mask)
 
@@ -192,7 +195,7 @@ def read_edge_list_input(filepath, mouse_index):
     # each line is an edge between two genes
 
     al = get_alignment_matrix()
-    A_time_length = len(al) # length with time alignment separated
+    # A_time_length = len(al) # length with time alignment separated # change to const TOTAL_WEEKS_WITH_ALIGNMENT
 
     mouse_alignment = get_week_alignment_for_mouse(mouse_index, al)
     weeks_without_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
@@ -247,6 +250,50 @@ def read_edge_list_input(filepath, mouse_index):
 
     return mouse_3d_matrix, mask
     
+
+# extra arg to make it a different function
+def read_edge_list_input(filepath, mouse_index, extra_arg):
+
+    al = get_alignment_matrix()
+    A_time_length = len(al) # length with time alignment separated
+
+    mouse_alignment = get_week_alignment_for_mouse(mouse_index, al)
+    weeks_without_sheets = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]
+
+    # Read the Excel file into a pandas DataFrame
+    wb = openpyxl.load_workbook(filepath)
+    coords_of_edges = []
+
+    # Iterate over each sheet in the Excel file
+    for sheet in wb.sheetnames:
+        # Determine the week number
+        if sheet == "Sheet1":
+            week = 0
+        else:
+            week = int(sheet.split('w')[-1])  # Convert week to integer
+
+        # Get the index of the week in the alignment matrix
+        week_index = mouse_alignment[week]
+
+        # Get the sheet
+        ws = wb[sheet]
+
+        # Iterate over the rows in the sheet
+        for row in ws.iter_rows(min_row=0, max_row=ws.max_row, min_col=0, max_col=2):
+            gene1 = row[0].value
+            gene2 = row[1].value
+            coords_of_edges.append((1, gene1, gene2, week_index))
+
+    # Extract the coordinates and data
+    data, x_indices, y_indices, z_indices = zip(*coords_of_edges)
+    data = np.array(data, dtype=bool)
+
+    # Create the sparse matrix
+    mouse_3d_matrix = sparse.COO((x_indices, y_indices, z_indices), data=data)
+
+    return mouse_3d_matrix
+
+
 if __name__ == "__main__":
     # Test the read_adj_matrix_input function
     filename = "COHP_44940_480__F_B.xlsm"
@@ -258,4 +305,8 @@ if __name__ == "__main__":
     gene_to_index, genes = make_map_of_genes(filename)
     print(gene_to_index)
     print(genes)
+
+    # output the coordinates of the edges to a file
+    with open("full_matrix_with_alignment.csv", "w") as f:
+        print("writing to file")
 
