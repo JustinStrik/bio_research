@@ -282,16 +282,16 @@ def read_edge_list_input(filepath, mouse_index, extra_arg):
         for row in ws.iter_rows(min_row=0, max_row=ws.max_row, min_col=0, max_col=2):
             gene1 = row[0].value
             gene2 = row[1].value
-            coords_of_edges.append((1, gene1, gene2, week_index))
+            coords_of_edges.append((1, gene1, gene2, week_index)) # week index is the index of the week in the alignment matrix
 
     # Extract the coordinates and data
     data, x_indices, y_indices, z_indices = zip(*coords_of_edges)
     data = np.array(data, dtype=bool)
 
     # Create the sparse matrix
-    mouse_3d_matrix = sparse.COO((x_indices, y_indices, z_indices), data=data)
+    mouse_3d_matrix = sparse.COO((x_indices, y_indices, z_indices), data=data, shape=(TOTAL_GENES, TOTAL_GENES, TOTAL_WEEKS_WITH_ALIGNMENT))
 
-    return mouse_3d_matrix
+    return mouse_3d_matrix, []
 
 
 if __name__ == "__main__":
