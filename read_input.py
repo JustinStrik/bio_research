@@ -315,10 +315,23 @@ def read_edge_list_input(filepath, mouse_index, extra_arg):
 
     return mouse_3d_matrix, []
 
+def read_full_matrix_with_alignment(filepath):
+    # Read the csv caleld full_matrix_with_alignment.csv
+    # only 3 columns, x, y, z
+
+    # use pd
+    df = pd.read_csv(filepath)
+
+    # get the values, unlabeled columns
+    return df.values
+    
+    
 
 if __name__ == "__main__":
     # Test the read_adj_matrix_input function
     filename = "COHP_44940_480__F_B.xlsm"
+
+    only_edge_data = read_full_matrix_with_alignment("full_matrix_with_alignment.csv")
 
     adj_matrix = get_full_matrix(20)
     # print(adj_matrix)
