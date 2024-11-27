@@ -11,6 +11,12 @@ def create_sample_data():
     data = np.random.choice([0, 1, np.nan], size=(100, 10, 10), p=[0.45, 0.45, 0.1])
     return data
 
+# data is 
+def load_data():
+    # Load the data
+    data = np.load('data.npy')
+    return data
+
 # Function to preprocess the data by replacing NaNs with a mask value
 def preprocess_data(data):
     mask_value = -1
