@@ -38,6 +38,7 @@ def score_matrix(predicted_matrix, original_matrix):
     FP = 0
     TN = 0
     FN = 0
+    
     for predicted_val, original_val in zip(predicted_matrix.flatten(), original_matrix.flatten()):
         TP += 1 if predicted_val == 1 and original_val == 1 else 0
         FP += 1 if predicted_val == 1 and original_val == 0 else 0
