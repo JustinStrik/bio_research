@@ -319,13 +319,19 @@ def read_full_matrix_with_alignment(filepath):
     # Read the csv caleld full_matrix_with_alignment.csv
     # only 3 columns, x, y, z
 
-    # use pd
     df = pd.read_csv(filepath)
 
     # get the values, unlabeled columns
     return df.values
     
-    
+def read_full_matrix_with_alignment():
+    # Read the csv caleld full_matrix_with_alignment.csv
+    # only 3 columns, x, y, z
+
+    df = pd.read_csv("full_matrix_with_alignment.csv")
+
+    # get the values, unlabeled columns
+    return df.values
 
 if __name__ == "__main__":
     # Test the read_adj_matrix_input function
