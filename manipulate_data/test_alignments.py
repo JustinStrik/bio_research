@@ -22,10 +22,7 @@ def get_alignments():
 
     return alignments
 
-
-if __name__ == "__main__":
-    # find indexes of parentheses that have more than 1 integer
-
+def get_rows_with_more_than_one_int():
     alignments = get_alignments()
     al = string_to_2d_array(alignments)
 
@@ -36,5 +33,31 @@ if __name__ == "__main__":
         row_int_count[i] = sum([1 for val in row if val.is_integer()])
 
     rows_with_more_than_one_int = np.where(row_int_count > 1)[0]
+
+    return rows_with_more_than_one_int
+
+# returns time_index->[mouse_index] for times with more than one mouse aligned
+def get_times_with_mouse_alignment():
+    alignments = get_alignments()
+    rows_with_more_than_one_int = get_rows_with_more_than_one_int()
+    al = string_to_2d_array(alignments)
+
+    # find indexes of parentheses that have more than 1 integer
+    parentheses_with_more_than_one_int = {}
+    for row in rows_with_more_than_one_int:
+        values = []
+        for i, val in enumerate(al[row]):
+            if val.is_integer():
+                values.append(i)
+        parentheses_with_more_than_one_int[row] = values
+
+    return parentheses_with_more_than_one_int
+
+if __name__ == "__main__":
+    # find indexes of parentheses that have more than 1 integer
+
+    rows_with_more_than_one_int = get_rows_with_more_than_one_int()
+
+    parens = get_times_with_mouse_alignment()
 
     print(rows_with_more_than_one_int)
