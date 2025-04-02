@@ -186,6 +186,22 @@ def get_full_matrix(DEBUG_MAX):
 
     return A, mask
 
+def get_single_mouse_matrix(filepath, mouse_index, mouse_file_name):
+    # no alignment matrix, just the edge list
+    # read the edge list
+    # return the sparse matrix
+    # get the edge list
+    files = get_edge_list_files()
+
+    for file in files:
+        if mouse_file_name in file:
+            edge_list = read_edge_list_input(file, mouse_index)
+            break
+
+
+
+    return edge_list
+
 # find which weeks have sheets in the excel file
 def get_weeks_with_sheets(filepath):
     wb = openpyxl.load_workbook(filepath)
@@ -332,6 +348,44 @@ def read_full_matrix_with_alignment():
 
     # get the values, unlabeled columns
     return df.values
+
+def read_edge_list_input_for_one_file(filepath, mouse_index, extra_arg):
+    """
+    Read edge list from Excel file and return list of edges with mouse offset.
+    No time alignment is performed.
+    
+    Args:
+        filepath: Path to Excel file containing edge lists
+        mouse_index: Index of this mouse (used for offset)
+        extra_arg: Unused, just to differentiate function signature
+        
+    Returns:
+        List of tuples (gene1, gene2 + offset, week) representing edges
+    """
+    # Read the Excel file
+    wb = openpyxl.load_workbook(filepath)
+    coords_of_edges = []
+
+    # Iterate over each sheet in the Excel file
+    for sheet in wb.sheetnames:
+        # Get week number from sheet name
+        if sheet == "Sheet1":
+            week = 0
+        else:
+            week = int(sheet.split('w')[-1])
+
+        # Get the sheet
+        ws = wb[sheet]
+
+        # Iterate over rows to get edges
+        for row in ws.iter_rows(min_row=0, max_row=ws.max_row, min_col=0, max_col=2):
+            gene1 = row[0].value
+            gene2 = row[1].value
+            # Add edge with offset for gene2 based on mouse index
+            coords_of_edges.append((gene1, gene2 + TOTAL_GENES * mouse_index, week))
+
+    return coords_of_edges
+            
 
 if __name__ == "__main__":
     # Test the read_adj_matrix_input function
